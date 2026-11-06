@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Toolverse</string>
+    <string name="welcome_subtitle">One App. 100+ Powerful Tools.</string>
+    <string name="welcome_tagline">Work Smarter. Do More.</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="terms_and_privacy_notice">By continuing, you agree to our Terms of Service &amp; Privacy Policy.</string>
+    <string name="home_greeting">Hello,</string>
+    <string name="home_headline">Explore 100+ Tools</string>
+    <string name="home_subheadline">All your productivity needs in one place.</string>
+    <string name="search_tools_hint">Search 120+ tools, formats, or workflows…</string>
+    <string name="featured_cv_title">Create Professional Resume &amp; CV</string>
+    <string name="featured_cv_cta">Start Now</string>
+    <string name="popular_categories">Popular Categories</string>
+    <string name="quick_access">Quick Access</string>
+    <string name="see_all">See All</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_tools">Tools</string>
+    <string name="nav_quick_action">Quick Action</string>
+    <string name="nav_history">History</string>
+    <string name="nav_profile">Profile</string>
+    <string name="sign_out">Log Out</string>
+    <string name="delete_account_data">Delete Account &amp; Cloud Data</string>
+    <string name="export_user_data">Export Account Data (JSON)</string>
+</resources>

@@ -1,0 +1,6 @@
+{
+  "name": "Toolverse",
+  "description": "Full-stack Android productivity toolkit with 100+ real utilities across PDF, CV & Career, Image, Data, Text, Archive, Security, Calculators, QR/Barcodes, Audio, and Developer workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

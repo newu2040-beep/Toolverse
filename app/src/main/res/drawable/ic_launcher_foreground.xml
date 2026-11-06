@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer soft glowing circle in safe zone -->
+    <path
+        android:fillColor="#22FFFFFF"
+        android:pathData="M54,24A30,30 0 1,1 24,54A30,30 0 0,1 54,24Z" />
+    <!-- Stylized Toolverse T + Leaf Emblem -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,36C34,33.79 35.79,32 38,32H74C74,38.63 68.63,44 62,44H56V70C56,73.31 53.31,76 50,76H46V44H38C35.79,44 34,42.21 34,40V36Z" />
+    <!-- Accent Leaf Wing -->
+    <path
+        android:fillColor="#6EE7B7"
+        android:pathData="M59,50H72C72,58.84 64.84,66 56,66V53C56,51.34 57.34,50 59,50Z" />
+</vector>

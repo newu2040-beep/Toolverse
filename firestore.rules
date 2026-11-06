@@ -1,0 +1,215 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 1. UserProfile Validation Blueprint
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120 &&
+             data.email is string && data.email.size() <= 254 &&
+             (!('photoURL' in data) || data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
+             data.themeMode is string && (
+               data.themeMode == 'SYSTEM' || data.themeMode == 'LIGHT' || data.themeMode == 'DARK' ||
+               data.themeMode == 'PASTEL_MINT' || data.themeMode == 'PASTEL_LAVENDER' || data.themeMode == 'PASTEL_PEACH' ||
+               data.themeMode == 'PASTEL_SKY' || data.themeMode == 'PASTEL_ROSE' || data.themeMode == 'PASTEL_LEMON'
+             ) &&
+             data.fontChoice is string && (
+               data.fontChoice == 'SYSTEM' || data.fontChoice == 'JAKARTA' || data.fontChoice == 'INTER' ||
+               data.fontChoice == 'POPPINS' || data.fontChoice == 'NUNITO' || data.fontChoice == 'SPACE' ||
+               data.fontChoice == 'LORA' || data.fontChoice == 'MONO'
+             ) &&
+             data.notificationsEnabled is bool &&
+             data.autoCleanCache is bool &&
+             (!('compactMode' in data) || data.compactMode is bool) &&
+             data.schemaVersion is int && data.schemaVersion >= 1 && data.schemaVersion <= 100 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 2. FavoriteTool Validation Blueprint
+    function isValidFavoriteTool(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.toolId is string && data.toolId.size() >= 1 && data.toolId.size() <= 100 &&
+             data.toolName is string && data.toolName.size() >= 1 && data.toolName.size() <= 120 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 80 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // 3. TaskHistoryItem Validation Blueprint
+    function isValidTaskHistoryItem(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.toolId is string && data.toolId.size() >= 1 && data.toolId.size() <= 100 &&
+             data.toolName is string && data.toolName.size() >= 1 && data.toolName.size() <= 120 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 80 &&
+             data.status is string && (data.status == 'IN_PROGRESS' || data.status == 'COMPLETED' || data.status == 'FAILED') &&
+             data.inputSummary is string && data.inputSummary.size() <= 500 &&
+             data.outputName is string && data.outputName.size() <= 300 &&
+             (!('outputUri' in data) || data.outputUri == null || (data.outputUri is string && data.outputUri.size() <= 1024)) &&
+             data.sizeBytes is int && data.sizeBytes >= 0 &&
+             data.durationMs is int && data.durationMs >= 0 &&
+             (!('errorMessage' in data) || data.errorMessage == null || (data.errorMessage is string && data.errorMessage.size() <= 500)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // 4. DocumentDraft Validation Blueprint
+    function isValidDocumentDraft(data) {
+      return data.userId is string && data.userId == request.auth.uid && data.userId.size() <= 128 &&
+             data.draftType is string && (data.draftType == 'CV' || data.draftType == 'LETTER' || data.draftType == 'FORM' || data.draftType == 'NOTE') &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+             data.templateId is string && data.templateId.size() >= 1 && data.templateId.size() <= 80 &&
+             data.structuredData is map && data.structuredData.size() <= 60 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // /users/{userId}
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'displayName', 'email', 'themeMode', 'fontChoice',
+                         'notificationsEnabled', 'autoCleanCache', 'schemaVersion', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'displayName', 'email', 'photoURL', 'themeMode', 'fontChoice',
+                         'notificationsEnabled', 'autoCleanCache', 'compactMode', 'schemaVersion', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'email', 'photoURL', 'themeMode', 'fontChoice',
+                         'notificationsEnabled', 'autoCleanCache', 'compactMode', 'schemaVersion', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // /users/{userId}/favorites/{toolId}
+      match /favorites/{toolId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(toolId);
+        allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(toolId) &&
+                         incoming().toolId == toolId &&
+                         incoming().keys().hasAll(['userId', 'toolId', 'toolName', 'category', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'toolId', 'toolName', 'category', 'createdAt']) &&
+                         isValidFavoriteTool(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(toolId) &&
+                         isValidFavoriteTool(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().toolId == existing().toolId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['toolName', 'category']);
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(toolId);
+      }
+
+      // /users/{userId}/history/{taskId}
+      match /history/{taskId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(taskId);
+        allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(taskId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'toolId', 'toolName', 'category', 'status',
+                           'inputSummary', 'outputName', 'sizeBytes', 'durationMs',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'toolId', 'toolName', 'category', 'status',
+                           'inputSummary', 'outputName', 'outputUri', 'sizeBytes', 'durationMs',
+                           'errorMessage', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidTaskHistoryItem(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(taskId) &&
+                         isValidTaskHistoryItem(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().toolId == existing().toolId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'status', 'inputSummary', 'outputName', 'outputUri',
+                           'sizeBytes', 'durationMs', 'errorMessage', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(taskId);
+      }
+
+      // /users/{userId}/drafts/{draftId}
+      match /drafts/{draftId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(draftId);
+        allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+        allow create: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(draftId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'draftType', 'title', 'templateId',
+                           'structuredData', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'draftType', 'title', 'templateId',
+                           'structuredData', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidDocumentDraft(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(userId) &&
+                         isValidId(draftId) &&
+                         isValidDocumentDraft(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().draftType == existing().draftType &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'title', 'templateId', 'structuredData', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(draftId);
+      }
+    }
+  }
+}

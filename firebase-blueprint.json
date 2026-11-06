@@ -1,0 +1,258 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile and synchronized workspace preferences.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Optional avatar URL."
+        },
+        "themeMode": {
+          "type": "string",
+          "enum": ["SYSTEM", "LIGHT", "DARK", "PASTEL_MINT", "PASTEL_LAVENDER", "PASTEL_PEACH", "PASTEL_SKY", "PASTEL_ROSE", "PASTEL_LEMON"],
+          "description": "Preferred appearance mode including pastel palettes."
+        },
+        "fontChoice": {
+          "type": "string",
+          "enum": ["SYSTEM", "JAKARTA", "INTER", "POPPINS", "NUNITO", "SPACE", "LORA", "MONO"],
+          "description": "Preferred UI typography family."
+        },
+        "notificationsEnabled": {
+          "type": "boolean",
+          "description": "Whether job completion notifications are enabled."
+        },
+        "autoCleanCache": {
+          "type": "boolean",
+          "description": "Whether temporary processing files are automatically cleaned."
+        },
+        "compactMode": {
+          "type": "boolean",
+          "description": "Whether compact UI density mode is enabled."
+        },
+        "schemaVersion": {
+          "type": "integer",
+          "description": "Profile schema version number."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was created via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was last updated via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "email",
+        "themeMode",
+        "fontChoice",
+        "notificationsEnabled",
+        "autoCleanCache",
+        "schemaVersion",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "FavoriteTool": {
+      "title": "FavoriteTool",
+      "description": "A user-bookmarked utility tool from the Toolverse catalog.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID."
+        },
+        "toolId": {
+          "type": "string",
+          "description": "Unique identifier of the tool in the catalog."
+        },
+        "toolName": {
+          "type": "string",
+          "description": "Display name of the tool."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category ID of the tool."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when bookmarked via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "toolId",
+        "toolName",
+        "category",
+        "createdAt"
+      ]
+    },
+    "TaskHistoryItem": {
+      "title": "TaskHistoryItem",
+      "description": "Metadata record of an executed tool operation without storing binary file contents.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID."
+        },
+        "toolId": {
+          "type": "string",
+          "description": "Executed tool ID."
+        },
+        "toolName": {
+          "type": "string",
+          "description": "Executed tool display name."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the executed tool."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["IN_PROGRESS", "COMPLETED", "FAILED"],
+          "description": "Execution status of the task."
+        },
+        "inputSummary": {
+          "type": "string",
+          "description": "Concise summary of input parameters or file count."
+        },
+        "outputName": {
+          "type": "string",
+          "description": "Generated output filename or result summary."
+        },
+        "outputUri": {
+          "type": "string",
+          "description": "Local file path or URI reference to generated artifact."
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "description": "Output size in bytes."
+        },
+        "durationMs": {
+          "type": "integer",
+          "description": "Processing duration in milliseconds."
+        },
+        "errorMessage": {
+          "type": "string",
+          "description": "Optional diagnostic message if status is FAILED."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when task started via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when task updated via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "toolId",
+        "toolName",
+        "category",
+        "status",
+        "inputSummary",
+        "outputName",
+        "sizeBytes",
+        "durationMs",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DocumentDraft": {
+      "title": "DocumentDraft",
+      "description": "User-saved CV, resume, career letter, or fillable form draft.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID."
+        },
+        "draftType": {
+          "type": "string",
+          "enum": ["CV", "LETTER", "FORM", "NOTE"],
+          "description": "Type of career or document draft."
+        },
+        "title": {
+          "type": "string",
+          "description": "User-assigned title for the draft."
+        },
+        "templateId": {
+          "type": "string",
+          "description": "Selected template identifier."
+        },
+        "structuredData": {
+          "type": "object",
+          "description": "Structured map of section fields for the CV, letter, or form."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when draft was created via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when draft was last saved via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "draftType",
+        "title",
+        "templateId",
+        "structuredData",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores per-user profile and synchronized settings."
+    },
+    "/users/{userId}/favorites/{toolId}": {
+      "schema": {
+        "$ref": "#/entities/FavoriteTool"
+      },
+      "description": "Stores bookmarked tools for each authenticated user."
+    },
+    "/users/{userId}/history/{taskId}": {
+      "schema": {
+        "$ref": "#/entities/TaskHistoryItem"
+      },
+      "description": "Stores processing task metadata history for each authenticated user."
+    },
+    "/users/{userId}/drafts/{draftId}": {
+      "schema": {
+        "$ref": "#/entities/DocumentDraft"
+      },
+      "description": "Stores CV, career letter, and form drafts for each authenticated user."
+    }
+  }
+}
